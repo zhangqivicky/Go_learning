@@ -1,9 +1,11 @@
 ### Goroutine
-- Goroutine 是 Go 实现Concurrency(并发)的核心机制. 它类似于Lightweight Thread, 允许多个任务并发执行，而不需要开发者直接管理operating system threads. Goroutine 并不等于 OS Thread。 大量 Goroutine 可以复用少量 OS Threads![[goroutine_1.png|536]]
+- Goroutine 是 Go 实现Concurrency(并发)的核心机制. 它类似于Lightweight Thread, 允许多个任务并发执行，而不需要开发者直接管理operating system threads. Goroutine 并不等于 OS Thread。 大量 Goroutine 可以复用少量 OS Threads
+- <img src="./images/goroutine_1.png" width="400" alt="k8s_2">  
 - **Concurrency vs Parallelism**
 	- Concurrency（并发）：多个任务在同一段时间内取得进展，不一定同时执行
 	- Parallelism（并行）：多个任务在同一时刻真正同时执行，需要多个 CPU 执行资源
-	- Go 同时支持 Concurrency 和 Parallelism![[go_concurrency_1.png|511]]
+	- Go 同时支持 Concurrency 和 Parallelism
+ 	- <img src="./images/go_concurrency_1.png" width="400" alt="k8s_2"> 
 - **如何创建 Goroutine?**
 	- 方式一：使用 `go` 调用普通函数
 		- ```go
@@ -25,7 +27,8 @@
 		  }
 		  ```
 - **Goroutine 是如何执行的？**
-	- Go 使用 GMP Scheduling Model 管理 Goroutine![[goroutine_2.png|390]]
+	- Go 使用 GMP Scheduling Model 管理 Goroutine
+ 	- <img src="./images/goroutine_2.png" width="400" alt="k8s_2">  
 	- 核心流程:
 		- 1. 执行 `go worker()`，Go Runtime 创建 Goroutine
 		- 2. 新的 Goroutine 进入可运行状态，并被放入运行队列
@@ -62,10 +65,10 @@
 		  fmt.Println(result) // 30
 	  }
 	  ```
-	- ![[goroutine_3.png|369]]
+	- <img src="./images/goroutine_3.png" width="400" alt="k8s_2">  
 - **实际工程中如何使用 Goroutine：Worker Pool**
 	- 无论有多少jobs，都只使用固定数量的 Worker 并发处理, 多个 Worker 共享同一个 Jobs Channel. Worker 通过竞争接收 Channel 中的数据来获取任务. Go Runtime 和 Channel 的同步机制会帮助完成job分发. 对于每个发送到 Channel 的 Job，只有一个 Worker 会接收到它。Note： 哪个 Worker 接到哪个 Job 并没有固定顺序
-	- ![[go_workerpool_1.png|293]]![[go_workerpool_2.png|326]]
+	- <img src="./images/go_workerpool_1.png" width="400" alt="k8s_2">  <img src="./images/go_workerpool_2.png" width="400" alt="k8s_2">  
 	- ```go
 	  // worker pool简易版本的代码
 	  func worker(id int, jobs <-chan int, results chan<- int, wg *sync.WaitGroup) {
@@ -118,7 +121,8 @@
 	  ```
 
 ### Channel
-- Channel（通道）Channel 可以理解为 Goroutine 之间传递数据的管道。  它允许不同的 Goroutine 之间安全地传递数据，并且可以用来进行同步（Synchronization）,是 Go 并发编程（Concurrency）中最重要的机制之一。![[go_channel_1.png|600]]
+- Channel（通道）Channel 可以理解为 Goroutine 之间传递数据的管道。  它允许不同的 Goroutine 之间安全地传递数据，并且可以用来进行同步（Synchronization）,是 Go 并发编程（Concurrency）中最重要的机制之一
+	- <img src="./images/go_channel_1.png" width="400" alt="k8s_2">  
 	- ```go
 	  //Channel 不仅能传递数据，还能让 Goroutine 等待彼此
 	  ch := make(chan int)
@@ -129,15 +133,15 @@
 	  fmt.Println(value) // 10
 	  ```
 - **Channel 的基本操作**
-	- ![[go_channel_2.png|460]]
+	- <img src="./images/go_channel_2.png" width="400" alt="k8s_2">  
 - **Buffered vs. Unbuffered Channel**
 	- buffered channel有缓冲空间，unbuffered channel没有
 	- Channel 的缓冲区遵循 FIFO（First In, First Out）
-	- ![[go_channel_3.png|406]]
+	- <img src="./images/go_channel_3.png" width="400" alt="k8s_2">  
 - **Channel 的 Blocking Behavior**
 	- Go Channel 默认的 Send 和 Receive 都可能 Blocking。
 	- 这里所谓的 Blocking，是指 当前 Goroutine 被挂起，而不是整个 OS Thread 必然被阻塞.Go Runtime Scheduler 可以继续调度其他 Goroutine
-	- ![[go_channel_4.png]]
+	- <img src="./images/go_channel_4.png" width="400" alt="k8s_2">  
 - **如何关闭 Channel？**
 	- ```go
 	  ch := make(chan int, 2)
@@ -164,7 +168,7 @@
 	  }()
 	  cancel()
 	  ```
-	- ![[go_channel_5.png|475]]
+	- <img src="./images/go_channel_5.png" width="400" alt="k8s_2">  
 - **select：同时监听多个 Channel**
 	- ```go
 	  select {
@@ -194,15 +198,17 @@
 - **Channel vs Mutex**
 	- Channel 和 Mutex 都可以用于 Goroutine 之间的并发协调，但它们的设计目的不同
 		- Channel：
-			- 核心思想：
+			- 核心思想：发送和接收数据来实现通信与同步
 			- 目的：用于 Goroutine 之间的数据传递和通信（Communication）
 		- Mutex：
 			- 核心思想：多个 Goroutine 可以访问同一个变量，但是同一时刻只允许一个 Goroutine 进入受保护的 Critical Section（临界区).
-			- 目的：用于保护多个 Goroutine 共享的数据(Mutual Exclusion), 并不负责传递数据![[go_channel_6.png|538]]
+			- 目的：用于保护多个 Goroutine 共享的数据(Mutual Exclusion), 并不负责传递数据
+   			- <img src="./images/go_channel_6.png" width="400" alt="k8s_2">  
 	- 虽然Go的经典设计理念是`share memory by communicating`, 但这并不意味着 Go 推荐所有场景都使用 Channel。实际上，对于简单的共享状态保护，Mutex 往往更直接、更高效。
 		- 多个 Goroutine 需要同时读写一个缓存 --> `sync.RWMutex`
 		- Worker Pool 处理jobs --> channel
-	- 假设有 100 个 Goroutines,每个都需要将 Counter 加 1，可以分别用Mutex 和 Channel来实现![[go_channel_7.png|586]]
+	- 假设有 100 个 Goroutines,每个都需要将 Counter 加 1，可以分别用Mutex 和 Channel来实现
+ 		- <img src="./images/go_channel_7.png" width="400" alt="k8s_2">  
 		- 方案一：Mutex
 		- ```go
 		  func main(){
@@ -249,9 +255,7 @@
 			  for value := range ch {
 				  counter += value
 			  }
-			  fmt.Println("Counter:", counter) // 100
-			  
-			  
+			  fmt.Println("Counter:", counter) // 100	  
 		  }
 		  ```
 ### Context
@@ -267,7 +271,7 @@
 	   }
 	  ```
 - **Context 是如何创建的?**
-	- ![[go_context_1.png]]
+	- <img src="./images/go_context_1.png" width="400" alt="k8s_2"> 
 	- ```go
 	  ctx := context.Background() //创建一个根Context
 	  // 创建一个新的Context, 要求相关操作最多等待5秒
